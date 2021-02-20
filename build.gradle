@@ -1,0 +1,37 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+    }
+}
+
+plugins {
+    id("io.spinnaker.plugin.bundler").version("$spinnakerGradleVersion")
+    id("com.palantir.git-version").version("0.12.2")
+    id("com.moowork.node").version("1.3.1").apply(false)
+}
+
+spinnakerBundle {
+    pluginId = "Opsmx.BulkSaveApiPlugin"
+    description = "An example of a Spring based plugin that requires no extension points."
+    provider = "https://github.com/opsmx"
+    version = rootProject.version
+}
+
+version = normalizedVersion()
+
+subprojects {
+    group = "com.opsmx.plugin.bulksave.api"
+    version = rootProject.version
+}
+
+String normalizedVersion() {
+    String fullVersion = gitVersion()
+    String normalized = fullVersion.split("-").first()
+    if (fullVersion.contains("dirty")) {
+        return "$normalized-SNAPSHOT"
+    } else {
+        return normalized
+    }
+}

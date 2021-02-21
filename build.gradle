@@ -13,8 +13,8 @@ plugins {
 }
 
 spinnakerBundle {
-    pluginId = "Opsmx.BulkSaveApiPlugin"
-    description = "An example of a Spring based plugin that requires no extension points."
+    pluginId = "Opsmx.GateBulkSaveApiPlugin"
+    description = "An example of a PF4J based plugin."
     provider = "https://github.com/opsmx"
     version = rootProject.version
 }
@@ -22,7 +22,7 @@ spinnakerBundle {
 version = normalizedVersion()
 
 subprojects {
-    group = "com.opsmx.plugin.bulksave.api"
+    group = "com.opsmx.spinnaker.gate"
     version = rootProject.version
 }
 

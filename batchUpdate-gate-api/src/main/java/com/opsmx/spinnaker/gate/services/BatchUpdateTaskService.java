@@ -1,4 +1,4 @@
-package com.opsmx.plugin.gate.services;
+package com.opsmx.spinnaker.gate.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.spinnaker.gate.services.internal.Front50Service;

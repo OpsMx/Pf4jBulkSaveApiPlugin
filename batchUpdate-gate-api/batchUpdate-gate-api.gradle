@@ -1,30 +1,11 @@
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-        classpath "org.jetbrains.kotlin:kotlin-allopen:$kotlinVersion"
-    }
-}
-apply plugin: "io.spinnaker.plugin.service-extension"
-apply plugin: "maven-publish"
-apply plugin: 'kotlin'
-apply plugin: 'kotlin-spring'
-apply plugin: 'kotlin-kapt'
-apply plugin: 'groovy'
 apply plugin: 'application'
+
+mainClassName = 'org.pf4j.demo.Boot'
 
 repositories {
     mavenCentral()
     jcenter()
     maven { url "https://spinnaker-releases.bintray.com/jars" }
-}
-
-spinnakerPlugin {
-    serviceName = "gate"
-    pluginClass = "com.opsmx.spinnaker.gate.plugins.GateBulkSaveApiExtension"
-    requires = "gate>=1.0.0"
 }
 
 dependencies {
@@ -37,29 +18,59 @@ dependencies {
     compileOnly files('/Users/sanjeev.thatiparthi/IdeaProjects/gate/gate-web/build/install/gate/lib/gate-api.jar')
     compileOnly group: 'com.squareup.retrofit', name: 'converter-jackson', version: '1.9.0'
 
-    implementation "com.netflix.spinnaker.kork:kork-exceptions:${korkVersion}"
-    implementation "com.netflix.spinnaker.kork:kork-security:${korkVersion}"
-    implementation group: 'io.swagger', name: 'swagger-annotations', version: '1.5.20'
+    //implementation group: 'com.jakewharton.retrofit', name: 'retrofit1-okhttp3-client', version: '1.1.0'
+    //runtimeOnly group: 'com.jakewharton.retrofit', name: 'retrofit1-okhttp3-client', version: '1.1.0'
 
-    testImplementation (group: 'com.netflix.spinnaker.kork', name: 'kork-plugins-spring-api', version: "${korkVersion}")
-    testImplementation "org.junit.jupiter:junit-jupiter-api:5.5.2"
-    testImplementation "io.strikt:strikt-core:0.22.1"
-    testImplementation "dev.minutest:minutest:1.10.0"
-    testImplementation "io.mockk:mockk:1.9.3"
+    annotationProcessor(group: 'org.pf4j', name: 'pf4j', version: "${pf4jVersion}")
 
-    testRuntime "org.junit.jupiter:junit-jupiter-engine:5.4.0"
-    testRuntime "org.junit.platform:junit-platform-launcher:1.4.0"
-    testRuntime "org.junit.platform:junit-platform-commons:1.5.2"
+    compileOnly "com.netflix.spinnaker.kork:kork-security:${korkVersion}"
 }
 
 sourceSets {
     main {
         java { srcDirs = ['src/main/java'] }
-        groovy { srcDirs += ['src/main/groovy'] }
     }
 }
 
+task uberjar(type: Jar, dependsOn: ['compileJava']) {
+    zip64 true
+    from configurations.runtimeClasspath.asFileTree.files.collect {
+        exclude "META-INF/*.SF"
+        exclude "META-INF/*.DSA"
+        exclude "META-INF/*.RSA"
+        zipTree(it)
+    }
+    from files(sourceSets.main.output.classesDirs)
+    from files(sourceSets.main.resources)
+    manifest {
+        attributes 'Main-Class': mainClassName
+    }
 
-tasks.withType(Test) {
-    useJUnitPlatform()
+    archiveBaseName = "${project.name}-plugin"
+}
+
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Main-Class': 'com.yourpackage.Main'
+        attributes 'Plugin-Id': 'com.opsmx.gate.bulksave.enabled.plugin'
+        attributes 'Plugin-Version': '1.0.0'
+        attributes 'Plugin-Class': 'com.opsmx.spinnaker.gate.plugins.GateBulkSaveApiPlugin'
+        attributes 'Plugin-Requires': 'gate>=1.0.0'
+    }
+    archiveBaseName = "com.opsmx.gate.bulksave.enabled.plugin"
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+        configurations.runtimeClasspath.collect {
+            exclude "META-INF/*.SF"
+            exclude "META-INF/*.DSA"
+            exclude "META-INF/*.RSA"
+            exclude "META-INF/*.kotlin*"
+            exclude "META-INF/*.xsd"
+            exclude "META-INF/*.properties"
+            exclude "META-INF/spring*.*"
+            exclude "META-INF/*.md"
+            exclude "META-INF/*.json"
+            zipTree(it) }
+    }
+    with jar
 }

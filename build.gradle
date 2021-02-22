@@ -1,37 +1,10 @@
-buildscript {
+subprojects {
+    apply plugin: 'java'
+
     repositories {
+        mavenLocal()
         mavenCentral()
     }
-    dependencies {
-    }
 }
+task build(dependsOn: [':batchUpdate-gate-api:fatJar'])
 
-plugins {
-    id("io.spinnaker.plugin.bundler").version("$spinnakerGradleVersion")
-    id("com.palantir.git-version").version("0.12.2")
-    id("com.moowork.node").version("1.3.1").apply(false)
-}
-
-spinnakerBundle {
-    pluginId = "Opsmx.GateBulkSaveApiPlugin"
-    description = "An example of a PF4J based plugin."
-    provider = "https://github.com/opsmx"
-    version = rootProject.version
-}
-
-version = normalizedVersion()
-
-subprojects {
-    group = "com.opsmx.spinnaker.gate"
-    version = rootProject.version
-}
-
-String normalizedVersion() {
-    String fullVersion = gitVersion()
-    String normalized = fullVersion.split("-").first()
-    if (fullVersion.contains("dirty")) {
-        return "$normalized-SNAPSHOT"
-    } else {
-        return normalized
-    }
-}

@@ -10,6 +10,8 @@ import com.netflix.spinnaker.kork.plugins.api.internal.ExtensionPointMetadataPro
 import com.netflix.spinnaker.kork.plugins.api.internal.SpinnakerExtensionPoint;
 import com.netflix.spinnaker.security.AuthenticatedRequest;
 import com.opsmx.spinnaker.gate.services.BatchUpdateTaskService;
+import com.opsmx.spinnaker.gate.services.internal.Front50Api;
+import com.opsmx.spinnaker.gate.services.internal.RestOk3Client;
 import org.jetbrains.annotations.NotNull;
 import org.pf4j.Extension;
 import org.slf4j.Logger;
@@ -29,19 +31,10 @@ public class GateBulkSaveApiExtension implements ApiExtension {
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     @Autowired
-    private ObjectMapper objectMapper;
+    private ObjectMapper objectMapper = new ObjectMapper();
 
-    @Autowired
-    private Front50Service front50Service;
-
-    BatchUpdateTaskService batchUpdateTaskService = new BatchUpdateTaskService(front50Service);
-
-    public GateBulkSaveApiExtension(ObjectMapper objectMapper,
-                                    Front50Service front50Service) {
-
-        this.objectMapper = objectMapper;
-        this.front50Service = front50Service;
-    }
+    BatchUpdateTaskService batchUpdateTaskService = new BatchUpdateTaskService(
+            new RestOk3Client().getClient());
 
     @NotNull
     @Override
@@ -106,9 +99,9 @@ public class GateBulkSaveApiExtension implements ApiExtension {
         }
     }
 
-    HttpResponse batchUpdateApiPipeline(String body) {
+    private HttpResponse batchUpdateApiPipeline(String body) {
 
-        log.info(" body : " + body);
+        log.debug(" batchUpdateApiPipeline() method start : " );
         Map<String, Object> job = new HashMap<>();
         try {
             List<Map<String, Object>> pipelines =
@@ -122,7 +115,9 @@ public class GateBulkSaveApiExtension implements ApiExtension {
         } catch (Exception e) {
             log.error("Unable to deserialize request body, reason: ", e.getMessage());
         }
-        return post(batchUpdateTaskService.bulkCreateAndWaitForCompletion(job));
+        Map result = batchUpdateTaskService.bulkCreateAndWaitForCompletion(job);
+        log.debug(" batchUpdateApiPipeline() method end : " );
+        return post(result);
     }
 }
 

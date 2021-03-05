@@ -4,14 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.spinnaker.gate.api.extension.ApiExtension;
 import com.netflix.spinnaker.gate.api.extension.HttpRequest;
 import com.netflix.spinnaker.gate.api.extension.HttpResponse;
-import com.netflix.spinnaker.gate.services.internal.Front50Service;
 import com.netflix.spinnaker.kork.plugins.api.PluginConfiguration;
 import com.netflix.spinnaker.kork.plugins.api.internal.ExtensionPointMetadataProvider;
 import com.netflix.spinnaker.kork.plugins.api.internal.SpinnakerExtensionPoint;
 import com.netflix.spinnaker.security.AuthenticatedRequest;
 import com.opsmx.spinnaker.gate.services.BatchUpdateTaskService;
-import com.opsmx.spinnaker.gate.services.internal.Front50Api;
 import com.opsmx.spinnaker.gate.services.internal.RestOk3Client;
+import com.opsmx.spinnaker.gate.util.PropertiesReader;
 import org.jetbrains.annotations.NotNull;
 import org.pf4j.Extension;
 import org.slf4j.Logger;
@@ -19,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Nonnull;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,11 +30,9 @@ public class GateBulkSaveApiExtension implements ApiExtension {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    @Autowired
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    BatchUpdateTaskService batchUpdateTaskService = new BatchUpdateTaskService(
-            new RestOk3Client().getClient());
+    BatchUpdateTaskService batchUpdateTaskService = new BatchUpdateTaskService();
 
     @NotNull
     @Override
@@ -119,5 +117,7 @@ public class GateBulkSaveApiExtension implements ApiExtension {
         log.debug(" batchUpdateApiPipeline() method end : " );
         return post(result);
     }
+
+
 }
 

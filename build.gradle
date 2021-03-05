@@ -1,3 +1,24 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
+plugins {
+    id("io.spinnaker.plugin.bundler").version("$spinnakerGradleVersion")
+}
+
+repositories {
+    mavenCentral()
+}
+
+spinnakerBundle {
+    pluginId = "Opsmx.CustomStagePlugin"
+    description = "An example of a PF4J-based plugin that provides a custom pipeline stage."
+    provider = "https://github.com/opsmx"
+    version = rootProject.version
+}
+
 subprojects {
     apply plugin: 'java'
 
@@ -6,5 +27,3 @@ subprojects {
         mavenCentral()
     }
 }
-task build(dependsOn: [':batchUpdate-gate-api:fatJar'])
-

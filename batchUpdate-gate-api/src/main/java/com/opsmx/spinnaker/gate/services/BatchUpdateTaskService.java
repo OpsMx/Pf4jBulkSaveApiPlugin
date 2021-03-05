@@ -21,14 +21,9 @@ public class BatchUpdateTaskService {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    @Autowired
     private Front50Api front50Api = new RestOk3Client().getClient();
 
     ObjectMapper objectMapper = new ObjectMapper();
-
-    public BatchUpdateTaskService(Front50Api front50Api) {
-        this.front50Api = front50Api;
-    }
 
     public Map bulkCreateAndWaitForCompletion(Map body) {
         return bulkCreateAndWaitForCompletion(body, 300, 1000);

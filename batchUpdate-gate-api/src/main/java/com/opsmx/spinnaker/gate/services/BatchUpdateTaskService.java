@@ -3,10 +3,10 @@ package com.opsmx.spinnaker.gate.services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.spinnaker.security.AuthenticatedRequest;
 import com.opsmx.spinnaker.gate.services.internal.Front50Api;
-import com.opsmx.spinnaker.gate.services.internal.RestOk3Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import retrofit.client.Response;
 
 import java.util.ArrayList;
@@ -14,18 +14,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Service
+@Component
 public class BatchUpdateTaskService {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
+    @Autowired
     private Front50Api front50Api;
 
-    public BatchUpdateTaskService(long timeout, String front50Url) {
-        this.front50Api = new RestOk3Client().getClient(timeout, front50Url);
-    }
+    @Autowired
+    private ObjectMapper objectMapper;
 
-    ObjectMapper objectMapper = new ObjectMapper();
+    public BatchUpdateTaskService(Front50Api front50Api,
+                                  ObjectMapper objectMapper) {
+        this.front50Api = front50Api;
+        this.objectMapper = objectMapper;
+    }
 
     public Map bulkCreateAndWaitForCompletion(Map body) {
         return bulkCreateAndWaitForCompletion(body, 300, 1000);

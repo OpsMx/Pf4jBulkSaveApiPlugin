@@ -13,6 +13,10 @@ import org.jetbrains.annotations.NotNull;
 import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
@@ -22,14 +26,23 @@ import java.util.Map;
 import static java.util.Collections.emptyMap;
 
 @Extension
+@Configuration
+@ComponentScan(basePackages = "com.opsmx.spinnaker.gate")
 public class GateBulkSaveApiExtension implements ApiExtension {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    private ObjectMapper objectMapper;
 
-    BatchUpdateTaskService batchUpdateTaskService = new BatchUpdateTaskService(
-            ApiExtensionConfigProperties.getTimeout(), ApiExtensionConfigProperties.getFront50Url());
+    @Autowired(required = false)
+    BatchUpdateTaskService batchUpdateTaskService;
+
+    public GateBulkSaveApiExtension(ObjectMapper objectMapper,
+                                    BatchUpdateTaskService batchUpdateTaskService) {
+        this.objectMapper = objectMapper;
+        this.batchUpdateTaskService = batchUpdateTaskService;
+    }
 
     @NotNull
     @Override
@@ -97,7 +110,7 @@ public class GateBulkSaveApiExtension implements ApiExtension {
             this.id = id;
         }
 
-        static long getTimeout() {
+        public long getTimeout() {
             return timeout;
         }
 
@@ -105,7 +118,7 @@ public class GateBulkSaveApiExtension implements ApiExtension {
             this.timeout = timeout;
         }
 
-        static String getFront50Url() {
+        public String getFront50Url() {
             return front50Url;
         }
 

@@ -9,16 +9,12 @@ import com.netflix.spinnaker.kork.plugins.api.internal.ExtensionPointMetadataPro
 import com.netflix.spinnaker.kork.plugins.api.internal.SpinnakerExtensionPoint;
 import com.netflix.spinnaker.security.AuthenticatedRequest;
 import com.opsmx.spinnaker.gate.services.BatchUpdateTaskService;
-import com.opsmx.spinnaker.gate.services.internal.RestOk3Client;
-import com.opsmx.spinnaker.gate.util.PropertiesReader;
 import org.jetbrains.annotations.NotNull;
 import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Nonnull;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +28,8 @@ public class GateBulkSaveApiExtension implements ApiExtension {
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    BatchUpdateTaskService batchUpdateTaskService = new BatchUpdateTaskService();
+    BatchUpdateTaskService batchUpdateTaskService = new BatchUpdateTaskService(
+            ApiExtensionConfigProperties.getTimeout(), ApiExtensionConfigProperties.getFront50Url());
 
     @NotNull
     @Override
@@ -59,7 +56,7 @@ public class GateBulkSaveApiExtension implements ApiExtension {
         return ExtensionPointMetadataProvider.getExtensionClass(this);
     }
 
-    private Boolean supportedGet(@Nonnull  HttpRequest httpRequest)  {
+    private Boolean supportedGet(@Nonnull HttpRequest httpRequest) {
         return httpRequest.getMethod().equalsIgnoreCase("GET") &&
                 httpRequest.getRequestURI().endsWith("");
     }
@@ -84,9 +81,13 @@ public class GateBulkSaveApiExtension implements ApiExtension {
     }
 
     @PluginConfiguration("api-extension")
-    static class ApiExtensionConfigProperties {
+    public static class ApiExtensionConfigProperties {
 
         private static String id;
+
+        private static long timeout;
+
+        private static String front50Url;
 
         static String getId() {
             return id;
@@ -95,29 +96,43 @@ public class GateBulkSaveApiExtension implements ApiExtension {
         void setId(String id) {
             this.id = id;
         }
+
+        static long getTimeout() {
+            return timeout;
+        }
+
+        void setTimeout(long timeout) {
+            this.timeout = timeout;
+        }
+
+        static String getFront50Url() {
+            return front50Url;
+        }
+
+        void setFront50Url(String front50Url) {
+            this.front50Url = front50Url;
+        }
     }
 
     private HttpResponse batchUpdateApiPipeline(String body) {
 
-        log.debug(" batchUpdateApiPipeline() method start : " );
+        log.debug(" batchUpdateApiPipeline() method start : ");
         Map<String, Object> job = new HashMap<>();
         try {
             List<Map<String, Object>> pipelines =
                     (List<Map<String, Object>>) objectMapper.readValue(body, List.class);
             job.put("type", "savePipeline");
             job.put("user", AuthenticatedRequest.getSpinnakerUser().orElse("anonymous"));
-            job.put("name","bulk save pipeline");
-            job.put("application","bulk save application");
+            job.put("name", "bulk save pipeline");
+            job.put("application", "bulk save application");
             job.put("pipeline", pipelines);
             log.info(" pipelines : " + pipelines);
         } catch (Exception e) {
             log.error("Unable to deserialize request body, reason: ", e.getMessage());
         }
         Map result = batchUpdateTaskService.bulkCreateAndWaitForCompletion(job);
-        log.debug(" batchUpdateApiPipeline() method end : " );
+        log.debug(" batchUpdateApiPipeline() method end : ");
         return post(result);
     }
-
-
 }
 

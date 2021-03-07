@@ -4,25 +4,19 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.jakewharton.retrofit.Ok3Client;
-import com.opsmx.spinnaker.gate.util.PropertiesReader;
 import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import retrofit.RestAdapter;
 import retrofit.converter.JacksonConverter;
 
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 public class RestOk3Client {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private static long timeoutInSecs = 11;
-
-    private static String front50Url = "http://localhost:8081";
-
-    public Front50Api getClient() {
+    public Front50Api getClient(long timeoutInSecs, String front50Url) {
 
         log.debug(" RestOk3Client getClient: start");
         log.info(" timeout in seconds : " + timeoutInSecs);
@@ -43,15 +37,5 @@ public class RestOk3Client {
                 .setLogLevel(RestAdapter.LogLevel.BASIC)
                 .build()
                 .create(Front50Api.class);
-    }
-
-    static {
-        try {
-            PropertiesReader propertiesReader = new PropertiesReader("batchUpdate.properties");
-            timeoutInSecs = Long.parseLong(propertiesReader.getProperty("okhttp.timeout.in.secs"));
-            front50Url = propertiesReader.getProperty("front50.url");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 }

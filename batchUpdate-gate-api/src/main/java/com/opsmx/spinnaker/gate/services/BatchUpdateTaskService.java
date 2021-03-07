@@ -1,13 +1,11 @@
 package com.opsmx.spinnaker.gate.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.netflix.spinnaker.gate.services.internal.Front50Service;
 import com.netflix.spinnaker.security.AuthenticatedRequest;
 import com.opsmx.spinnaker.gate.services.internal.Front50Api;
 import com.opsmx.spinnaker.gate.services.internal.RestOk3Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import retrofit.client.Response;
 
@@ -21,7 +19,11 @@ public class BatchUpdateTaskService {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private Front50Api front50Api = new RestOk3Client().getClient();
+    private Front50Api front50Api;
+
+    public BatchUpdateTaskService(long timeout, String front50Url) {
+        this.front50Api = new RestOk3Client().getClient(timeout, front50Url);
+    }
 
     ObjectMapper objectMapper = new ObjectMapper();
 
@@ -31,7 +33,7 @@ public class BatchUpdateTaskService {
 
     public Map create(Map body) {
 
-        log.debug(" create() method start : " );
+        log.debug(" create() method start : ");
         if (body.containsKey("application")) {
             AuthenticatedRequest.setApplication(body.get("application").toString());
         }
@@ -46,7 +48,7 @@ public class BatchUpdateTaskService {
         } catch (Exception e) {
             log.error("Unable to deserialize saved pipeline, reason: ", e.getMessage());
         }
-        log.debug(" create() method end : " );
+        log.debug(" create() method end : ");
         return outputs;
     }
 

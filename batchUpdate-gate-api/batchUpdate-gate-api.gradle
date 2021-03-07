@@ -8,14 +8,6 @@ repositories {
     maven { url "https://spinnaker-releases.bintray.com/jars" }
 }
 
-apply plugin: "io.spinnaker.plugin.service-extension"
-
-spinnakerPlugin {
-    serviceName = "gate"
-    pluginClass = "com.opsmx.spinnaker.gate.plugins.GateBulkSaveApiPlugin"
-    requires="gate>=0.0.0"
-}
-
 dependencies {
     compileOnly (group: 'org.springframework', name: 'spring-context', version: '5.2.1.RELEASE')
     compileOnly (group: 'com.netflix.spinnaker.kork', name: 'kork-plugins-spring-api', version: "${korkVersion}")
@@ -36,4 +28,47 @@ sourceSets {
     main {
         java { srcDirs = ['src/main/java'] }
     }
+}
+
+task uberjar(type: Jar, dependsOn: ['compileJava']) {
+    zip64 true
+    from configurations.runtimeClasspath.asFileTree.files.collect {
+        exclude "META-INF/*.SF"
+        exclude "META-INF/*.DSA"
+        exclude "META-INF/*.RSA"
+        zipTree(it)
+    }
+    from files(sourceSets.main.output.classesDirs)
+    from files(sourceSets.main.resources)
+    manifest {
+        attributes 'Main-Class': mainClassName
+    }
+
+    archiveBaseName = "${project.name}-plugin"
+}
+
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Main-Class': 'com.yourpackage.Main'
+        attributes 'Plugin-Id': 'com.opsmx.gate.bulksave.enabled.plugin'
+        attributes 'Plugin-Version': '1.0.0'
+        attributes 'Plugin-Class': 'com.opsmx.spinnaker.gate.plugins.GateBulkSaveApiPlugin'
+        attributes 'Plugin-Requires': 'gate>=1.0.0'
+    }
+    archiveBaseName = "com.opsmx.gate.bulksave.enabled.plugin"
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+        configurations.runtimeClasspath.collect {
+            exclude "META-INF/*.SF"
+            exclude "META-INF/*.DSA"
+            exclude "META-INF/*.RSA"
+            exclude "META-INF/*.kotlin*"
+            exclude "META-INF/*.xsd"
+            exclude "META-INF/*.properties"
+            exclude "META-INF/spring*.*"
+            exclude "META-INF/*.md"
+            exclude "META-INF/*.json"
+            zipTree(it) }
+    }
+    with jar
 }

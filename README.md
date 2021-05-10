@@ -21,26 +21,13 @@ Adding the following to your gate.yml or ~/.hal/default/profiles/gate-local.yml 
 ```
 spinnaker:
   extensibility:
+    framework:
+      version: v2
     plugins:
-      Opsmx.CustomStagePlugin:
+      com.opsmx.gate.bulksave.enabled.plugin:
         enabled: true
-        version: 1.0.1
-        config:
-          defaultVmDetails: '{
-                              "username": "ubuntu",
-                              "password": "xxxxx",
-                              "port": 22,
-                              "server": "xx.xx.xx.xx"
-                            }'
-          defaultgitAccount: '{
-                                "artifactAccount": "my-github-artifact-account",
-                                "reference": "https://api.github.com/repos/opsmx/Pf4jCustomStagePlugin/contents/script.sh",
-                                "type": "github/file",
-                                "version": "main"
-                              }'
-    repositories:
-      opsmx-repo:
-        url: https://raw.githubusercontent.com/opsmx/spinnakerPluginRepository/master/repositories.json
+        api-extension.config:
+          id: bulksave
 ```
 
 ## Method 2

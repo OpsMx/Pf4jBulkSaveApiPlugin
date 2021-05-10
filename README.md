@@ -13,6 +13,7 @@ There are 2 ways of deploying this plugin in the spinnaker.
 
    - [x] Run `./gradlew clean fatJar`.
    - [x] Copy the `batchUpdate-gate-api/build/libs/com.opsmx.gate.bulksave.enabled.plugin.jar` into your spinnaker gate plugin root repository.
+         Default spinnaker's microservice plugins root directory is `<opt>/<microservice>/plugins/`. eg:- (opt/gate/plugins).
    - [x] Configure the Spinnaker gate service. Put the following in the gate-local.yml to enable the plugin and configure the extension.
    
           1.   Gate configuration

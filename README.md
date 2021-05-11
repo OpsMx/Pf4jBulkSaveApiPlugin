@@ -21,13 +21,13 @@ Adding the following to your gate.yml or ~/.hal/default/profiles/gate-local.yml 
 ```
 spinnaker:
   extensibility:
-    framework:
-      version: v2
     plugins:
       com.opsmx.gate.bulksave.enabled.plugin:
         enabled: true
         api-extension.config:
           id: bulksave
+          timeout: 30
+          front50Url: http://localhost:8080
 ```
 
 ## Method 2
@@ -38,12 +38,60 @@ spinnaker:
 
    #### Gate logs
 ```
-2021-03-12 07:43:02.827  INFO 15527 --- [           main] org.pf4j.AbstractPluginManager           : [] No plugins
-2021-03-12 07:43:04.472  INFO 15527 --- [           main] org.pf4j.util.FileUtils                  : [] Expanded plugin zip 'Opsmx.CustomStagePlugin-pf4jCustomStagePlugin-v1.0.1.zip' in 'Opsmx.CustomStagePlugin-pf4jCustomStagePlugin-v1.0.1'
-2021-03-12 07:43:04.490  INFO 15527 --- [           main] org.pf4j.util.FileUtils                  : [] Expanded plugin zip 'orca.zip' in 'orca'
-2021-03-12 07:43:04.508  INFO 15527 --- [           main] org.pf4j.AbstractPluginManager           : [] Plugin 'Opsmx.CustomStagePlugin@1.0.2' resolved
-2021-03-12 07:43:04.509  INFO 15527 --- [           main] org.pf4j.AbstractPluginManager           : [] Start plugin 'Opsmx.CustomStagePlugin@1.0.2'
-2021-03-12 07:43:04.517  INFO 15527 --- [           main] c.o.p.stage.custom.CustomStagePlugin     : [] CustomStagePlugin.start()
+2021-05-11 05:30:35.488  INFO 16643 --- [           main] org.pf4j.DefaultPluginManager            : PF4J version 3.2.0 in 'deployment' mode
+2021-05-11 05:30:35.823  WARN 16643 --- [           main] c.n.s.kork.version.ServiceVersion        : Unable to determine the service version, setting it to unknown
+2021-05-11 05:30:37.546  INFO 16643 --- [           main] c.n.s.config.PluginsAutoConfiguration    : Enabling spinnaker-official and spinnaker-community plugin repositories
+2021-05-11 05:30:37.939  INFO 16643 --- [           main] org.pf4j.AbstractPluginManager           : Plugin 'com.opsmx.gate.bulksave.enabled.plugin@1.0.0' resolved
+2021-05-11 05:30:40.613  INFO 16643 --- [           main] org.pf4j.AbstractPluginManager           : Start plugin 'com.opsmx.gate.bulksave.enabled.plugin@1.0.0'
+2021-05-11 05:30:40.683  INFO 16643 --- [           main] c.o.s.g.plugins.GateBulkSaveApiPlugin    : GateBulkSaveApiPlugin plugin start. 
+
+```
+
+## Check the gate rest api endpoint to confirm whether the plugin endpoint is working successfully:
+
+   #### Gate GET Method rest endpoint check
+```
+Rest Endpoint : GET Method : http://<gate-url>:8084/extensions/bulksave/batch
+
+Rest Endpoint Result : {}
+
+```
+
+ #### Gate POST Method Bulk Save rest endpoint check
+```
+Rest Endpoint : POST Method : http://<gate-url>:8084/extensions/bulksave/batchUpdate
+
+                POST Body : [
+  {
+    "keepWaitingPipelines": false,
+    "limitConcurrent": true,
+    "application": "tst004",
+    "spelEvaluator": "v4",
+    "name": "pipe7",
+    "stages": [
+      {
+        "requisiteStageRefIds": [],
+        "name": "Wait",
+        "refId": "1",
+        "type": "wait",
+        "waitTime": 6
+      }
+    ],
+    "index": 0,
+    "triggers": []
+  }
+]
+
+Rest Endpoint Result : {
+    "result": {
+        "Failed_list": [
+            {}
+        ],
+        "Failed": 0,
+        "Successful": 1
+    }
+}
+
 ```
 
 ## Common pitfalls:

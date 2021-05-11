@@ -30,10 +30,6 @@ spinnaker:
           front50Url: http://localhost:8080
 ```
 
-## Method 2
-
-   To be added.
-
 ## Check the logs to confirm the plugin started successfully:
 
    #### Gate logs
@@ -47,6 +43,11 @@ spinnaker:
 
 ```
 
+## Method 2
+
+   To be added.
+   
+   
 ## Check the gate rest api endpoint to confirm whether the plugin endpoint is working successfully:
 
    #### Gate GET Method rest endpoint check
